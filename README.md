@@ -1,4 +1,4 @@
-git check-ignore -v config.php
+
 # SecurePortal: Secure PHP Web App
 
 IT 670, Selected Topics in Information Security.
