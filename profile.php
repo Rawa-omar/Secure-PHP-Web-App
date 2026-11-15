@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/api.php';
+require_once __DIR__ . '/includes/security.php'; 
+
+enforce_session_timeout(); 
 
 // Only logged-in users may see this page
 if (!isset($_SESSION['user_id'])) {

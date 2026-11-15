@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
-
+require_once __DIR__ . '/includes/security.php';
 // Already logged in? Go to profile.
 if (isset($_SESSION['user_id'])) {
     header('Location: profile.php');
@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['confirm'] ?? '';
+        if (!csrf_check()) {
+        $errors[] = 'Invalid request. Please reload the page and try again.';
+    }
 
     // ---- Validation (server side) ----
     if ($name === '' || mb_strlen($name) > 100) {
@@ -70,6 +73,7 @@ require __DIR__ . '/includes/header.php';
   <?php endforeach; ?>
 
   <form method="post" action="register.php" novalidate>
+    <?= csrf_field() ?>
     <label for="name">Full name</label>
     <input type="text" id="name" name="name" value="<?= e($name) ?>" required maxlength="100" autocomplete="name">
 

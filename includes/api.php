@@ -1,18 +1,41 @@
 <?php
 // Calls a REST API from the server and returns the decoded JSON (or null on failure).
+// Calls a REST API from the server and returns the decoded JSON (or null on failure).
+// Uses cURL when available, otherwise falls back to file_get_contents.
 function fetch_json(string $url, array $headers = [], int $timeout = 8): ?array {
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => $timeout,
-        CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_HTTPHEADER     => array_merge(['Accept: application/json', 'User-Agent: IT670-student-project'], $headers),
-    ]);
-    $body = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $allHeaders = array_merge(['Accept: application/json', 'User-Agent: IT670-student-project'], $headers);
+    $body = false;
+    $code = 0;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_HTTPHEADER     => $allHeaders,
+        ]);
+        $body = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+    } else {
+        $context = stream_context_create([
+            'http' => [
+                'method'        => 'GET',
+                'header'        => implode("\r\n", $allHeaders),
+                'timeout'       => $timeout,
+                'ignore_errors' => true,
+            ],
+            'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+        ]);
+        $body = @file_get_contents($url, false, $context);
+        if ($body !== false && isset($http_response_header[0])
+            && preg_match('#\s(\d{3})\s#', $http_response_header[0], $m)) {
+            $code = (int) $m[1];
+        }
+    }
 
     if ($body === false || $code !== 200) {
         return null;

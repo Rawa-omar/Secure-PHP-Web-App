@@ -35,14 +35,19 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `register_day_time` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ 
 
+ CREATE TABLE `login_attempts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(150) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `attempted_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `email` (`email`,`ip`,`attempted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 --
 -- إرجاع أو استيراد بيانات الجدول `users`
 --
-
-INSERT INTO `users` (`id`, `name`, `mobile`, `email`, `password`, `register_day_time`) VALUES
-(1, 'lam', '0536673722', 'logain1421@gmail.com', '$2y$10$gwNuSOaIHFYIYxVnJOkgOOBB76qWh/vpMQE2vG50EoIQn5WEWcD6K', '2026-11-11 09:59:14'),
-(2, '<script>alert(\'hacked\')</script>', '0501234567', 'xss@test.com', '$2y$10$nsifgqV2185LxdsRUD/aieTkIdIdUQAfStFoL73wDFcG3NdtqrHce', '2026-11-11 23:41:45');
 
 --
 -- Indexes for dumped tables
@@ -63,7 +68,8 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

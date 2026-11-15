@@ -1,4 +1,8 @@
-<?php require_once __DIR__ . '/../config.php'; ?>
+<?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/security.php';
+enforce_session_timeout();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

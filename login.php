@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/security.php';
 
 if (isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: profile.php');
     exit;
 }
 
@@ -13,8 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if ($email === '' || $password === '') {
+    if (!csrf_check()) {
+        $error = 'Invalid request. Please reload the page and try again.';
+    } elseif ($email === '' || $password === '') {
         $error = 'Enter your email and password.';
+    } elseif (is_locked_out($email)) {
+        $error = 'Too many failed attempts. Please try again in ' . LOCK_MINUTES . ' minutes.';
     } else {
         try {
             // Prepared statement (stops SQL injection)
@@ -24,11 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Compare the typed password with the stored hash
             if ($user && password_verify($password, $user['password'])) {
-                session_regenerate_id(true);          // new session ID after login
+             clear_attempts($email);    
+             session_regenerate_id(true);          // new session ID after login
                 $_SESSION['user_id'] = (int) $user['id'];
                 header('Location: profile.php');
                 exit;
             }
+            record_failed_attempt($email);
             // Same message for "no such email" and "wrong password" so attackers learn nothing
             $error = 'Incorrect email or password.';
         } catch (PDOException $ex) {
@@ -49,11 +56,15 @@ require __DIR__ . '/includes/header.php';
   <?php if (isset($_GET['loggedout'])): ?>
     <div class="msg ok">You have been logged out.</div>
   <?php endif; ?>
+    <?php if (isset($_GET['timeout'])): ?>
+    <div class="msg error">Your session expired due to inactivity. Please log in again.</div>
+  <?php endif; ?>
   <?php if ($error): ?>
     <div class="msg error"><?= e($error) ?></div>
   <?php endif; ?>
 
   <form method="post" action="login.php" novalidate>
+    <?= csrf_field() ?>
     <label for="email">Email</label>
     <input type="email" id="email" name="email" value="<?= e($email) ?>" required autocomplete="email">
 
