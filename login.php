@@ -15,27 +15,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if (!csrf_check()) {
+        log_event('csrf_failed', null, $email);
         $error = 'Invalid request. Please reload the page and try again.';
     } elseif ($email === '' || $password === '') {
         $error = 'Enter your email and password.';
     } elseif (is_locked_out($email)) {
+        log_event('login_blocked', null, $email);
         $error = 'Too many failed attempts. Please try again in ' . LOCK_MINUTES . ' minutes.';
     } else {
         try {
             // Prepared statement (stops SQL injection)
-            $stmt = db()->prepare('SELECT id, name, password FROM users WHERE email = ?');
+            $stmt = db()->prepare('SELECT id, name, email, password FROM users WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
             // Compare the typed password with the stored hash
             if ($user && password_verify($password, $user['password'])) {
-             clear_attempts($email);    
-             session_regenerate_id(true);          // new session ID after login
-                $_SESSION['user_id'] = (int) $user['id'];
+                $userId = (int) $user['id'];
+                clear_attempts($email);
+                session_regenerate_id(true);          // new session ID after login
+                $_SESSION['user_id'] = $userId;
+                $_SESSION['last_activity'] = time();
+
+                // Previous login and failed attempts since then, read before logging this login
+                $_SESSION['login_summary'] = login_summary($userId, $user['email']);
+                log_event('login_success', $userId, $user['email']);
+
                 header('Location: profile.php');
                 exit;
             }
             record_failed_attempt($email);
+            log_event('login_failed', $user ? (int) $user['id'] : null, $email);
             // Same message for "no such email" and "wrong password" so attackers learn nothing
             $error = 'Incorrect email or password.';
         } catch (PDOException $ex) {

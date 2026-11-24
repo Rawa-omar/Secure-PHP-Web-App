@@ -3,8 +3,7 @@
 
 // ===== App info =====
 const APP_NAME = 'SecurePortal';
-const AUTHORS  = 'Your Name &amp; Partner Name';
-
+const AUTHORS  = 'Ghada Altuwayjiri, Lujain Al-Dawsari &amp; Rawa Almotawa';
 // ===== Database connection (XAMPP defaults) =====
 const DB_HOST = 'localhost';
 const DB_NAME = 'secure_app';

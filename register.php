@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/security.php';
+require_once __DIR__ . '/includes/api.php';
+
 // Already logged in? Go to profile.
 if (isset($_SESSION['user_id'])) {
     header('Location: profile.php');
@@ -16,7 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['confirm'] ?? '';
-        if (!csrf_check()) {
+    if (!csrf_check()) {
+        log_event('csrf_failed', null, $email);
         $errors[] = 'Invalid request. Please reload the page and try again.';
     }
 
@@ -35,6 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($password !== $confirm) {
         $errors[] = 'The two passwords do not match.';
+    }
+    // Reject passwords that appeared in known data breaches
+    if (!$errors) {
+    $breaches = pwned_count($password);
+    if ($breaches > 0) {
+        $errors[] = 'This password has appeared in ' . number_format($breaches)
+                  . ' data breaches. Please choose a different password.';
+    }
     }
 
     // ---- Save the user ----

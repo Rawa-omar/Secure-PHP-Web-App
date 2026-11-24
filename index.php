@@ -6,7 +6,7 @@ require __DIR__ . '/includes/header.php';
   <div class="wrap hero-grid">
     <div>
       <h1>Your account, kept private and kept yours.</h1>
-      <p class="lead">Create an account, sign in, and see your profile alongside live weather and the latest news for your area.</p>
+      <p class="lead">Create an account, sign in, and see your profile alongside live security news and the latest critical vulnerabilities.</p>
       <div class="actions">
         <?php if (isset($_SESSION['user_id'])): ?>
           <a class="btn" href="profile.php">Go to your profile</a>

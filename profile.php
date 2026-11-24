@@ -22,6 +22,13 @@ if (!$user) {               // stale session (account no longer exists): clear i
     exit;
 }
 
+// ---- Account activity (security_log) ----
+$summary  = $_SESSION['login_summary'] ?? ['previous' => null, 'failed' => 0];
+$previous = $summary['previous'];
+$failed   = (int) $summary['failed'];
+$activity = user_activity((int) $_SESSION['user_id'], $user['email'], 10);
+$warnEvents = ['login_failed', 'login_blocked', 'csrf_failed'];
+
 // ---- REST APIs (results are cached for a few minutes) ----
 $news   = cached('hn',    600, fn() => get_hn_top(5));
 $cves   = cached('nvd',   900, fn() => get_nvd_latest(5));
@@ -39,6 +46,52 @@ require __DIR__ . '/includes/header.php';
       <dt>Email</dt><dd><?= e($user['email']) ?></dd>
       <dt>Registered on</dt><dd><?= e($user['register_day_time']) ?></dd>
     </dl>
+  </div>
+
+  <div class="card" style="margin-top: 24px;">
+    <h2>Account activity</h2>
+
+    <?php if ($failed > 0): ?>
+      <div class="msg error" role="alert">
+        <strong><?= e((string) $failed) ?> failed login attempt<?= $failed === 1 ? '' : 's' ?></strong>
+        on your account since your last successful login.
+        If this wasn't you, change your password.
+      </div>
+    <?php endif; ?>
+
+    <?php if ($previous): ?>
+      <p>
+        <strong>Previous login:</strong>
+        <?= e($previous['created_at']) ?>
+        from IP <?= e($previous['ip']) ?>,
+        <?= e(device_label($previous['user_agent'])) ?>
+      </p>
+    <?php else: ?>
+      <p class="hint">This is your first recorded login.</p>
+    <?php endif; ?>
+
+    <h3 class="sub">Last 10 security events</h3>
+    <?php if ($activity): ?>
+      <div class="table-scroll">
+        <table class="activity">
+          <thead>
+            <tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">IP</th><th scope="col">Device</th></tr>
+          </thead>
+          <tbody>
+            <?php foreach ($activity as $row): ?>
+              <tr<?= in_array($row['event'], $warnEvents, true) ? ' class="warn"' : '' ?>>
+                <td><?= e($row['created_at']) ?></td>
+                <td><?= e(event_label($row['event'])) ?></td>
+                <td><?= e($row['ip']) ?></td>
+                <td><?= e(device_label($row['user_agent'])) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    <?php else: ?>
+      <p class="hint">No security events recorded yet.</p>
+    <?php endif; ?>
   </div>
 
   <div class="card" style="margin-top: 24px;">

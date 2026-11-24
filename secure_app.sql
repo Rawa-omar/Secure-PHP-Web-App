@@ -45,6 +45,20 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   KEY `email` (`email`,`ip`,`attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Security event log: login_success, login_failed, login_blocked, csrf_failed, logout, session_timeout
+CREATE TABLE `security_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `event` varchar(30) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_event` (`user_id`,`event`),
+  KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 --
 -- إرجاع أو استيراد بيانات الجدول `users`
 --
