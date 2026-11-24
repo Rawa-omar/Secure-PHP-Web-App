@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/security.php';
 enforce_session_timeout();
+send_security_headers();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +12,7 @@ enforce_session_timeout();
   <title><?= e($pageTitle ?? APP_NAME) ?> | <?= APP_NAME ?></title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body<?= isset($_SESSION['user_id']) ? ' data-idle-timeout="' . (int) IDLE_TIMEOUT . '"' : '' ?>>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap bar">

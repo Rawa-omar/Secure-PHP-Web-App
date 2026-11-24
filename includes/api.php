@@ -124,3 +124,34 @@ function get_radar_devices(string $token): ?array {
     $data = fetch_json($url, ['Authorization: Bearer ' . $token]);
     return $data['result']['summary_0'] ?? null;
 }
+
+// ---------- API 4: Have I Been Pwned - Pwned Passwords (k-anonymity, no key) ----------
+// Only the first 5 characters of the SHA-1 hash are sent, so the password never leaves the server.
+// Returns how many breaches contain the password, 0 if none, or null if the API is unreachable.
+function pwned_count(string $password): ?int {
+    $hash   = strtoupper(sha1($password));
+    $prefix = substr($hash, 0, 5);
+    $suffix = substr($hash, 5);
+
+    $ch = curl_init('https://api.pwnedpasswords.com/range/' . $prefix);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_HTTPHEADER     => ['User-Agent: IT670-student-project', 'Add-Padding: true'],
+    ]);
+    $body = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($body === false || $code !== 200) {
+        return null;    // fail open: registration still works if the API is down
+    }
+    foreach (explode("\n", $body) as $line) {
+        [$s, $count] = array_pad(explode(':', trim($line)), 2, '0');
+        if ($s === $suffix) {
+            return (int) $count;
+        }
+    }
+    return 0;
+}
