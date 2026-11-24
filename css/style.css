@@ -112,4 +112,40 @@ input:focus { border-color: var(--blue); }
 .feed li { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .feed li:last-child { border-bottom: 0; }
 .feed .hint { display: block; margin-top: 2px; }
+/* account activity */
+.card h3.sub { margin: 22px 0 10px; font-size: 1.05rem; color: var(--pine); }
+.table-scroll { overflow-x: auto; }
+.activity { width: 100%; border-collapse: collapse; font-size: .94rem; }
+.activity th, .activity td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.activity th { color: var(--pine); font-weight: 700; background: #f7faf8; }
+.activity td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.activity tr.warn td { background: #fdf3f1; color: var(--danger); }
+
+/* form helpers added by js/app.js */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-right: 72px; }
+.pw-toggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: 0; color: var(--blue); font-weight: 600;
+  font-size: .9rem; padding: 6px 8px; cursor: pointer; border-radius: 4px;
+}
+.pw-toggle:hover { text-decoration: underline; }
+input.invalid { border-color: var(--danger); }
+.field-msg { color: var(--danger); font-size: .88rem; margin: 4px 0 0; min-height: 0; }
+.field-msg:empty { display: none; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.meter-bar { height: 100%; width: 0; transition: width .2s, background .2s; }
+.meter-bar.weak { background: var(--danger); }
+.meter-bar.fair { background: #d9822b; }
+.meter-bar.good { background: var(--blue); }
+.meter-bar.strong { background: var(--ok); }
+.meter-label:empty { display: none; }
+.timeout-warning {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  width: min(520px, 92%); z-index: 20; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: var(--paper); border: 1px solid var(--line); border-left: 6px solid #d9822b;
+  border-radius: 8px; padding: 16px 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+}
+.timeout-warning p { margin: 0; flex: 1 1 220px; }
+
 .badge { display: inline-block; background: #fbe9e7; color: var(--danger); border-radius: 4px; padding: 1px 8px; font-size: .85rem; font-weight: 700; margin-left: 6px; }
